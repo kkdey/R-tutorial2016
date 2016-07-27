@@ -1,0 +1,265 @@
+---
+title: "Data Management in R"
+author: "Kushal K Dey"
+date: "July 27, 2016"
+output: 
+  html_document:
+    css: floating-toc.css
+    toc: true
+---
+
+### First steps
+
+The first step in any data analysis is to read the data. 
+\textcolor{red}{Caution}: *Note the size of the file (.csv or .txt or .xlsx) before reading the data*. If the data is less than 20-30 MB, use the very generic **read.csv**, **read.table** or *read_excel* function from the package *readxl*.
+
+```{r echo=TRUE, eval=FALSE}
+data <- read.table("PATH to FILE (.txt)")
+data <- read.csv("PATH TO FILE (.csv)")
+data <- readxl::read_excel("PATH TO FILE (.csv)")
+```
+
+If the size of the data is more than the above cut-off, use the *fread* function from the package **data.table**. 
+
+```{r echo=TRUE, eval=FALSE}
+data <- data.frame(data.table::fread("PATH TO FILE (.csv)"))
+```
+
+Now assuming you have loaded the data, lets look at how to handle a data.
+
+We load a data on flight schedule from the **hflights** package. 
+
+```{r}
+suppressMessages(library(dplyr))
+library(hflights)
+data(hflights)
+```
+
+The data is now loaded and saved under *hflights*. The first thing you should do is check the dimension. 
+
+```{r}
+dim(hflights)
+```
+
+Caution: Do not do 
+
+```{r echo=TRUE, eval=FALSE}
+# hflights
+```
+
+if the data is big, there is a possibility that it may take a long time to print and you won't even be able to make much sense of the printed output.
+
+Shortcuts around this problem. Look at a snapshot of the data.
+
+```{r}
+head(hflights) ## the top 6 rows 
+tail(hflights) ## last 6 rows
+glimpse(hflights) ## summary of the columns with types identified
+summary(hflights)
+```
+
+### Local Data Frame
+
+You can do a bunch of data handling and processing stuffs very elegantly in R, especially using the **dplyr** package. That is why it is always useful to convert a data frame to a local data frame using **dplyr**
+
+```{r}
+flights <- tbl_df(hflights)
+```
+
+If you need to print the data, do the following
+
+```{r}
+# convert to local data frame
+flights <- tbl_df(hflights)
+
+# printing only shows 10 rows and as many columns as can fit on your screen
+flights
+
+# you can specify that you want to see more rows
+print(flights, n=20)
+
+# convert to a normal data frame to see all of the columns
+data.frame(head(flights))
+```
+
+
+###  Filtering Rows with matching criterion
+
+```{r}
+filter(flights, Month==1, DayofMonth==1)
+```
+
+If you want to save this filtered data, do
+
+```{r}
+filtered_data <- data.frame(filter(flights, Month==1, DayofMonth==1))
+head(filtered_data) ## prints first few rows, match with previous
+dim(filtered_data) ## dimension of the filtered data
+```
+
+
+```{r}
+# use pipe for OR condition
+filter(flights, UniqueCarrier=="AA" | UniqueCarrier=="UA")
+```
+
+It is same as 
+
+```{r}
+filter(flights, UniqueCarrier %in% c("AA", "UA"))
+```
+
+###  Selecting columns 
+
+We can select columns simply by name 
+
+```{r}
+flights[, c("DepTime", "ArrTime", "FlightNum")] ## base - R function
+```
+
+or 
+
+```{r}
+select(flights, DepTime, ArrTime, FlightNum) ## dplyr function
+```
+
+```{r}
+select(flights, Year:DayOfWeek)
+select(flights, Year:DayofMonth, contains("Taxi"), contains("Delay"))
+```
+
+### Chaining or Pipelining 
+
+```{r}
+# nesting method to select UniqueCarrier and DepDelay columns and filter for delays over 60 minutes
+filter(select(flights, UniqueCarrier, DepDelay), DepDelay > 60)
+```
+
+We can do the nesting in a sequential way 
+
+```{r}
+flights %>%
+    select(UniqueCarrier, DepDelay) %>%
+    filter(DepDelay > 60)
+```
+
+This improves the readability of the commands that should act sequential
+
+```{r}
+flights %>% 
+  filter(DepDelay > 60) %>% 
+  select(UniqueCarrier, DepDelay)  ## should be same as before
+```
+
+If we want to sort by *DepDelay*.
+
+```{r}
+## ascending order of DepDelay
+
+flights %>%
+    select(UniqueCarrier, DepDelay) %>%
+    arrange(DepDelay)
+
+## descending order of DepDelay
+
+flights %>%
+    select(UniqueCarrier, DepDelay) %>%
+    arrange(desc(DepDelay))
+```
+
+### Add new columns 
+
+We can add new columns processing from the current table using the `mutate` function.
+
+```{r}
+flights %>%
+    select(Distance, AirTime) %>%
+    mutate(Speed = Distance/AirTime*60)
+```
+
+A very useful technique is summarizing data by grouping a column.
+
+`group_by` creates the group and `summarise` provides the aggregation function for the groups 
+
+```{r}
+flights %>%
+    group_by(Dest) %>%
+    summarise(avg_delay = mean(ArrDelay, na.rm=TRUE))
+```
+
+```{r}
+# for each carrier, calculate the percentage of flights cancelled or diverted
+
+flights %>%
+    group_by(UniqueCarrier) %>%
+    summarise_each(funs(mean), Cancelled, Diverted)
+
+# for each carrier, calculate the minimum and maximum arrival and departure delays
+
+
+flights %>%
+    group_by(UniqueCarrier) %>%
+    summarise_each(funs(min(., na.rm=TRUE), max(., na.rm=TRUE)), ArrDelay, DepDelay)
+
+## same as before
+
+flights %>%
+    group_by(UniqueCarrier) %>%
+    summarise_each(funs(min(., na.rm=TRUE), max(., na.rm=TRUE)), matches("Delay"))
+
+```
+
+### Sample from the data 
+
+If we want to randomly select a few rows from the data, we can do it using the `sample_n` or `sample_frac` functions. 
+
+```{r}
+# randomly sample a fixed number of rows, without replacement
+flights %>% sample_n(5)
+
+# randomly sample a fraction of rows, with replacement
+flights %>% sample_frac(0.25, replace=TRUE)
+
+```
+
+### More useful commands
+
+We can use the `n()` and `n_distinct()` functionalities to determine the numebr of cases and the number of distinct cases in  agroup respectively. 
+
+```{r}
+# for each day of the year, count the total number of flights and sort in descending order
+
+flights %>%
+    group_by(Month, DayofMonth) %>%
+    summarise(flight_count = n()) %>%
+    arrange(desc(flight_count))
+
+# rewrite more simply with the `tally` function
+
+flights %>%
+    group_by(Month, DayofMonth) %>%
+    tally(sort = TRUE)
+
+flights %>%
+    group_by(Dest) %>%
+    summarise(flight_count = n(), plane_count = n_distinct(TailNum))
+
+```
+
+Find rows corresponding to distinct values of a column using `distinct` function.
+
+```{r}
+flights %>%
+  select(UniqueCarrier, FlightNum, TailNum) %>%
+  distinct(FlightNum)
+```
+
+An example with multiple chaining commands 
+
+```{r}
+flights %>%
+    group_by(UniqueCarrier) %>%
+    select(Month, DayofMonth, DepDelay) %>%
+    arrange(UniqueCarrier, desc(DepDelay))
+```
+
