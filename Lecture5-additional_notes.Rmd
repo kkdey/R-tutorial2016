@@ -1,0 +1,31 @@
+---
+title: "Additional Notes"
+author: "Kushal K Dey"
+date: "July 28, 2016"
+output: html_document
+---
+
+We are skipping on various other statistical methods which have very handy functions and packages in R, I am listing some of them here. You can look up the packages and their documentation. 
+
+- Principal Component analysis (PCA) : packages : functions *prcomp*, *princomp*
+
+- Predictive modeling in R : package check the package **caret**, there are a host of functions in this package that are meant for this purpose.
+
+- Clustering in R: check the package **cluster** (you will find a lot of details on simple non-model based clustering in R)
+
+- Classification in R: **e1071** package for *svm* (Support Vector Machine), the function *knn* in package **class** for k-nearest neighbor classification. *tree* function in the package **tree** for classification tree.
+
+Also for help on producing highly reproducible and easy to read Markdown files as I created here, look up 
+
+[Rmarkdown cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
+For more on the ggplot2 and the dplyr packages for data visualization and data management, check
+
+[Tutorial for ggplot2](http://tutorials.iq.harvard.edu/R/Rgraphics/Rgraphics.html)
+
+[Tutorial for dplyr](https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html)
+
+**Final Tip**: for most common and even not so common approaches to data handling and modeling, there are available packages and functions in R, you just need to find them. In doing so, try to make use of **Google** and **Stackoverflow** as much as you can !!
+
+
+

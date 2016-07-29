@@ -1,0 +1,303 @@
+---
+title: 'R: Exploration of data with Visualization'
+author: "Kushal K Dey"
+date: "July 28, 2016"
+output: html_document
+---
+
+In this script, we shall breifly go over visualization in R.
+
+## Simple Scatter Plot
+
+We consider some basic plotting tools here.
+
+```{r}
+vec1 <- c(10, 20, 30, 40, 50);
+vec2 <- c(2, 5, 10, 12, 20);
+plot(vec1, vec2)
+
+## shape of the points determination in the plot
+
+plot(vec1, vec2, pch=20)
+
+## line width of the points in the plot
+
+plot(vec1, vec2, pch=20, lwd=10)
+plot(vec1, vec2, pch=7, lwd=10)
+plot(vec1, vec2, pch=2, lwd=10)
+
+## What pch to choose...look up documentation
+
+?pch
+
+## color the points 
+
+plot(vec1, vec2, pch=20, lwd=1, col="red")
+
+## Add title to the plot
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", main="Scatter Plot")
+
+##  Fix the margin of the plot
+par(mar=c(4,4,4,4)) 
+plot(vec1, vec2, pch=20, lwd=1, col="red", main="Scatter Plot",
+     xlab="X", ylab="Y")
+
+## A new margin of the plot
+
+par(mar=c(8,5,5,5)) 
+plot(vec1, vec2, pch=20, lwd=1, col="red", main="Scatter Plot",
+     xlab="X", ylab="Y")
+
+par(mar=c(4,4,4,4)) 
+plot(vec1, vec2, pch=20, lwd=1, col="red", main="Scatter Plot",
+     xlab="X", ylab="Y")
+
+## control size of the points in the plot
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=10, main="Scatter Plot", xlab="X", ylab="Y")
+
+## cex.main controls the size of the title
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.main=4)
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.main=0.5)
+
+## cex.axis controls the size of the axis labels
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=2)
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3)
+
+## if you want a line plot instead of scatter plot
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3, type="l")
+
+## fix aspect ratio 
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3, type="l", asp=1)
+
+## Fix xlim and ylim
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3, type="l", asp=1,
+     xlim=c(0,100), ylim=c(-20,40))
+
+## For fancier looking plot, use qplot() of package ggplot2
+
+ggplot2::qplot(vec1, vec2, col="red", main="Scatter Plot", xlab="X", ylab="Y", xlim=c(0,50), ylim=c(-5,25))
+
+```
+
+## Multiple plots in same frame
+
+```{r}
+vec1 <- c(10, 20, 30, 40, 50);
+vec2 <- c(2, 5, 10, 12, 40);
+vec3 <- c(0.5, 7, 20, 25, 30);
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3, type="l")
+points(vec1, vec3, pch=20, lwd=1, col="green", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3, type="l")
+
+## analogous
+
+plot(vec1, vec2, pch=20, lwd=1, col="red", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3, type="l")
+lines(vec1, vec3, pch=20, lwd=1, col="green", cex=1, main="Scatter Plot", xlab="X", ylab="Y", cex.axis=0.3)
+
+```
+
+## Multiple subplots 
+
+base-R
+
+```{r}
+par(mfrow=c(1,2))
+plot(vec1, vec2, col="red", pch=20, main="Scatter Plot", xlab="X", ylab="Y")
+plot(vec1, vec3, col="red", pch=20, main="Scatter Plot", xlab="X", ylab="Y")
+```
+
+ggplot2
+
+```{r}
+multiplot <- function(..., plotlist=NULL, cols) {
+    require(grid)
+
+    # Make a list from the ... arguments and plotlist
+    plots <- c(list(...), plotlist)
+
+    numPlots = length(plots)
+
+    # Make the panel
+    plotCols = cols                          # Number of columns of plots
+    plotRows = ceiling(numPlots/plotCols) # Number of rows needed, calculated from # of cols
+
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(plotRows, plotCols)))
+    vplayout <- function(x, y)
+        viewport(layout.pos.row = x, layout.pos.col = y)
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+        curRow = ceiling(i/plotCols)
+        curCol = (i-1) %% plotCols + 1
+        print(plots[[i]], vp = vplayout(curRow, curCol ))
+    }
+
+}
+```
+
+```{r}
+plot1 <- ggplot2::qplot(vec1, vec2, main="Scatter Plot", xlab="X", ylab="Y")
+plot2 <- ggplot2::qplot(vec1, vec3, main="Scatter Plot", xlab="X", ylab="Y")
+multiplot(plot1, plot2, cols=2)
+```
+
+## Summary plots of data
+
+Visualization is an important exploration tool, specially when the data size is pretty big.
+
+```{r}
+```{r}
+data(mtcars)
+vec <- mtcars$qsec
+```
+
+summary plots for the *vec* data 
+
+```{r}
+par(mfrow=c(1,1))
+summary(vec)
+hist(vec)
+boxplot(vec)
+```
+
+Suppose now we have a discrete data. We can either summarize it in a table format or make a bar chart out of it.
+
+```{r}
+gears <- mtcars$gear;
+counts <- table(mtcars$gear)
+barplot(counts)
+```
+
+Options like *cex*, *cex.main*, *cex.axis*, *col* and other plotting parameters are available for all these above plots, check the documentation by typing 
+
+```{r}
+?barplot
+?boxplot
+?hist
+```
+
+Any histogram for continuous data can be approximated by a continuous curve passing through it. We call that the density plot for that data.
+
+```{r}
+hist(vec, prob=TRUE) ## scales frequencies s.t. area under curve sums to 1
+points(density(vec), type="l")
+```
+
+There are some standard forms of densities in R and we usually try to map the density plots from the data to any of these forms of densities after adjusting for location and scale.
+
+```{r}
+par(mfrow=c(2,2))
+curve(dnorm(x,0,1), from=-3, to=3, main="Normal") ## mean 0, sd 1
+curve(dgamma(x,3,3), from=0, to=3, main="Gamma") ## scale and shape
+curve(dunif(x,-1,1), from=-3, to=3, main="Uniform") ## start and end points
+curve(dcauchy(x,0,10), from=-3, to=3, main="Cauchy") ## location and scale
+```
+
+We can simulate data from each of these density functions. Simulation means if we have enough data, the histogram will closely approximate the underlying density functions.
+
+```{r}
+norm_vec <- rnorm(10000, 0, 1);
+gamma_vec <- rgamma(10000, 3, 3);
+unif_vec <- runif(10000, -1, 1);
+cauchy_vec <- rcauchy(10000, 0, 0.1);
+
+par(mfrow=c(2,2))
+
+hist(norm_vec, xlab="Normal", ylab="freq", xlim=c(-3,3))
+hist(gamma_vec, xlab="Gamma", ylab="freq", xlim=c(0,3) )
+hist(unif_vec, xlab="uniform", ylab="freq", xlim=c(-3,3))
+hist(cauchy_vec, xlab="Cauchy", ylab="freq", xlim=c(-3,3))
+
+```
+
+If we want to know the density function value at each point, we use the *d...* function, if we want to know the area under the curve less than or equal to that point, we use *p...* and if we want to find the quantiles, we use *q...*
+
+```{r}
+par(mfrow=c(1,1))
+curve(dnorm(x,0,1), from=-3, to=3, main="Normal")
+abline(v = 0.5, col = "red", lty = "dashed")
+dnorm(0.5, 0, 1)
+pnorm(0.5,0,1)
+qnorm(0.69, 0, 1)
+
+curve(dnorm(x,0,1), from=-3, to=3, main="Normal")
+abline(v = 0.5, col = "red", lty = "dashed")
+dnorm(0,0,1)
+pnorm(0,0,1)
+dnorm(-Inf, 0, 1)
+dnorm(Inf, 0, 1)
+pnorm(-Inf, 0, 1)
+pnorm(Inf, 0, 1)
+```
+
+Similarly we can do the same for *_unif*, *_gamma*, *_cauchy*, *_beta*, *_exp*, *_chisq* and many other contunuous density functions.
+
+The quantile information is very crucial. We often try to match the quantiles we get from the data with the ones from these standard distributions after location and scale adjustment.
+
+For normal case, it is very simple
+
+```{r}
+quantile(vec)
+qqnorm(vec)
+qqline(vec)
+```
+
+These plots are called QQ plots.
+
+There are also more formal tests that give a measure of whether the data fits a normal density map well or not. If this measure is less than $0.05$, then it is not Normal, else it is mapped well to Normal.
+
+```{r}
+shapiro.test(vec)
+```
+
+One can similarly plot QQ plots for other distributions.
+
+```{r}
+library(gap)
+qqfun(vec, distribution="cauchy")
+qqfun(vec, distribution="norm")
+qqfun(vec, distribution="unif")
+qqfun(vec, distribution="gamma", shape=3, scale=3)
+```
+
+
+It seems from the abobe plots that the Normal distribution is a good fit.
+
+We want to test if the underlying normal distribution it is mapped to has mean 0 or not.
+
+```{r}
+t.test(vec)
+```
+
+The p-value is again a measure of whether the hypothesis is true or not. Since it is less than 0.05, we say it does not have mean 0. Is it obvious?
+
+```{r}
+plot(density(vec))
+```
+
+We can standardize vec by subtracting the mean and then dividing by standard deviation. That is called *z/t-score*.
+
+```{r}
+z_vec <- (vec - mean(vec))/sd(vec)
+```
+
+Lets now use t-test on this vector. This should satisfy the Normal distribution with mean 0 assumption.
+
+```{r}
+t.test(z_vec)
+```
+
+Notice the very high p-value.
+
+

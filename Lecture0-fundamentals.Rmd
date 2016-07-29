@@ -1,0 +1,128 @@
+---
+title: "Fundamentals of R"
+author: "Kushal K Dey"
+date: "July 28, 2016"
+output: 
+  html_document:
+    css: floating-toc.css
+    toc: true
+---
+
+##Installation Instructions
+
+[http://statistics.uchicago.edu/~collins/Rinstall/](http://statistics.uchicago.edu/~collins/Rinstall/)
+
+A generic way of installing and loading R packages 
+
+```{r echo=TRUE, eval=FALSE}
+install.packages("vegan") ## vegan is the name of the package
+library(vegan)
+```
+
+## Directory path setting
+
+Set the directory where you want to work. Preferably, same directory as the one where the script lies. 
+
+```{r echo=TRUE, eval=FALSE}
+setwd("PATH") ## set the path where you want to load or save files 
+getwd()  ## gives back the directory you set
+```
+
+## Helper functions
+
+If the user wants to look up the documentation for all functions of a package or a specific function of a package, he can type 
+
+```{r echo=TRUE, eval=FALSE}
+help(vegan) 
+help(adonis, package="vegan") ## adonis is a function in vegan package
+```
+
+## Printing in R
+
+Print statements 
+
+```{r}
+print("Hello World!!")
+a <- 1
+a
+print(a)
+print("a is equal to", a) ## Do not use
+cat("a is equal to", a)
+```
+
+## Simplest mathematics
+
+Basic functions
+
+```{r}
+a <- 2; b <- 4
+c <- a+b  ## addition
+c= a+b ## same as c <- a+b
+d <- a - b ## subtraction 
+e <- a*b ## multiplication
+f <- a/b ## division
+g <- a %% b ## modulo
+exp(a); ## exponentiation
+log(a); ## logarithm
+a^2; ## square
+sqrt(a) ## square root
+```
+
+## Conditional Statements  (if/else)
+
+```{r}
+counter = 0;
+
+if (counter > 0){
+  a=1
+}else{
+  a=0
+}
+
+a
+```
+
+## Looping (for and while loops)
+
+```{r}
+x <- 0;
+for(i in 1:50){
+  x <- x+i
+  x
+}
+
+flag <- 1
+while(flag < 4){
+  print(flag)
+  flag=flag+1
+}
+
+```
+
+## Calling  a function 
+
+```{r}
+## Function call
+
+## We want a function that computes a square of an object (may be numeric or a numeric vector)
+
+prodvec <- function(x){
+  x2 <- x*x
+  return(x2)
+}
+
+prodvec(4)
+prodvec(3:10)
+```
+
+
+## A random number generator
+
+```{r}
+runif(1,0,1) ## one random draw from 0 to 1
+runif(100, 0, 1) ## 100 random draws from 0 to 1
+runif(1,10,11) ## 1 random draw from 10 to 11
+runif(10, -100, 100) ## 10 random draws from -100 to 100
+```
+
+

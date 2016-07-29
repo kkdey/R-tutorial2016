@@ -1,0 +1,229 @@
+---
+title: 'R: Statistical Analysis'
+author: "Kushal K Dey"
+date: "July 28, 2016"
+output: 
+  html_document:
+    css: floating-toc.css
+    toc: true
+---
+
+## The Modeling Framework
+
+Sometimes we will have one response variable which linearly depends on multiple other predictor variables. If we call the response variable as $Y$ and the predictor variables as $X_1$, $X_2$, $\cdots$, $X_{p}$, then one can write 
+
+$$ E(Y) = \beta_0  + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p $$
+
+If we model Y as normally distributed centered around $0$, then we can use the *lm()* function in R. We provide an example of that.
+
+
+
+First we consider a very simple case with one response $Y$ and one predictor variable $X$.
+
+$$ E(Y) = \beta_0 + \beta_1 X $$
+
+## Lienar Regression
+
+In the linear regression or linear model, we assume $Y$ to be normally distributed. As an example, we consider the data on snout lengths and weights of $15$ alligators.
+
+```{r}
+alligator = data.frame(
+  lnLength = c(3.87, 3.61, 4.33, 3.43, 3.81, 3.83, 3.46, 3.76,
+    3.50, 3.58, 4.19, 3.78, 3.71, 3.73, 3.78),
+  lnWeight = c(4.87, 3.93, 6.46, 3.33, 4.38, 4.70, 3.50, 4.50,
+    3.58, 3.64, 5.90, 4.43, 4.38, 4.42, 4.25)
+)
+
+alligator
+```
+
+We do expect to see a positive association between the snout lengths and the weights of the alligators. We can see that by plotting the two. We have seen some versions of this scatter plot before.
+
+```{r}
+plot(alligator$lnLength, alligator$lnWeight, col="red", pch=20)
+```
+
+But we can also use the *xyplot()* function for a fancier plot.
+
+```{r}
+library(lattice)
+xyplot(lnWeight ~ lnLength, data = alligator,
+  xlab = "Snout vent length (inches) on log scale",
+  ylab = "Weight (pounds) on log scale",
+  main = "Alligators in Central Florida"
+)
+```
+
+Can we pass a line through these points? What would be the equation of that line. This line is what we try to estimate via the linear model. 
+
+```{r}
+alli.mod1 = lm(lnWeight ~ lnLength, data = alligator)
+summary(alli.mod1)
+```
+
+Okay thats a whole lot of information. The estimates of $\beta$ can be obtained from 
+
+```{r}
+coef(alli.mod1)
+```
+
+But for extra information, we can read all information about these estimated for $\beta$ as follows
+
+```{r}
+mat <- coef(summary(alli.mod1))
+mat[,1]
+mat[,4]
+```
+
+The estimates for the model intercept is $\hat{\beta}_0 = -8.4761$ and the coefficient measuring the slope of the relationship with snout vent length is $\hat{\beta}_1= 3.4311$.
+
+$\hat{\beta}$ is the estimate of the parameters $\beta$ that are obtained from fitting the model. 
+
+*What does the second column give?*
+
+It tells us that if we had independently repeated the experiment of collecting $15$ alligators and measuring their snout length and weight and then fitted the model and collected $\hat{\beta}_{0}$ and $\hat{\beta}_{1}$ for each repetition, then the standard deviations of the vectors of all those $\hat{\beta}_{0}$ and $\hat{\beta}_{1}$ would be given by the second column.
+
+*The third column is the ratio of the first and the second columns.*
+
+The fourth column tries to test if the true coefficients $\beta_0$ and $\beta_1$ are $0$ or not. The test is analogous to the $t.text()$ we introduced before (we avoid the details). If this measure is $< 0.05$ as in this case, we can say that the coefficients are not 0, else they can be treated as $0$. Note that even when $\hat{\beta}_{1}$ and $\hat{beta}_{0}$ are non-zero, it may very well happen that the measure is $>0.05$ and in that case $\beta_1$ or $\beta_0$ would be considered as $0$. 
+
+What does $\beta_1=0$ means? There is no effect of the weight on the snout length. As you can see from the plot, that is not the case and that is also reflected in the $PR(> |t|)$ value for $\beta_1$ being $1.494611e-12$.
+
+
+Whether the linear model is a good fit to the data can be checked by looking at the multiple R-squared and the adjusted R-squared values. If these are close to 1, the model is very good, if they are close to 0, the model is bad. As you can see in this case, they are around  $0.9$.
+
+The fitted value 
+
+$$\hat{Y} = \hat{\beta}_{0}  + \hat{\beta}_{1} x_1 $$
+
+and errors or residuals 
+
+$$ e = Y - \hat{Y} $$
+
+```{r}
+fitted(alli.mod1)
+residuals(alli.mod1)
+xyplot(resid(alli.mod1) ~ fitted(alli.mod1),
+  xlab = "Fitted Values",
+  ylab = "Residuals",
+  main = "Residual Diagnostic Plot",
+  panel = function(x, y, ...)
+  {
+    panel.grid(h = -1, v = -1)
+    panel.abline(h = 0)
+    panel.xyplot(x, y, ...)
+  }
+)
+
+
+qqnorm(resid(alli.mod1), ylab="residuals quantiles", xlab="normal quantiles", pch=20, col="blue")
+qqline(resid(alli.mod1))
+```
+
+## Multiple Linear Regression
+
+One can use more than one predictor variables as well. We call that a multiple linear regression.
+
+```{r}
+data(mtcars)
+input <- mtcars[,c("mpg","disp","hp","wt")]
+print(head(input))
+```
+
+
+We apply multiple linear regression with *mpg* as the response variable and *disp*, *hp* and *wt* as the predictor variables. 
+
+```{r}
+model <- lm(mpg~disp+hp+wt, data = input)
+summary(model)
+coef(model)
+Xdisp <- coef(model)[2]
+Xhp <- coef(model)[3]
+Xwt <- coef(model)[4]
+
+```
+
+Note here *hp* and *wt* are predictors which are **significant**, meaning they have non-zero coefficient whereas *disp* is a predictor that has the $Pr (> |t|)$ value very high compare to $0.05$, so it is a **non-significant** predictor. 
+
+Also check the adjusted R-square and multiple R-square are both pretty high. We may want to use the model 
+
+$$ mpg ~ hp + wt  $$
+
+How does it compare to the previous model
+
+$$ mpg ~ disp + hp + wt $$
+
+```{r}
+model1 <- lm(mpg ~ disp + hp + wt, data=mtcars)
+model2 <- lm(mpg ~ hp + wt, data=mtcars)
+anova(model1, model2)
+```
+
+This is called an Analysis of Variance (ANOVA) table. Again if $PR(>F)$ is higher than $0.05$, then we say the two models are basically similar, if not then there is a substantially different from each other. Since the only difference between the two models is that one contains *disp* as a predictor while the other does not, therefore one can say that the $Pr(> F)$ will only be very small (smaller than $0.05$) when there is a substantial influence of the *disp* variable. As we already saw that is not the case, so it is also intuitive that we do not get a significance here.
+
+
+## Generalized Linear models
+
+For continuous random variables, we use either simple regression (1 predictor) or multiple linear regression. When response variable are discrete, may be $0/1$ or counts data, or in other words $Y$ is not normal, then we use the Generalized Linear Models 
+
+```{r}
+mpg_counts <- floor(mtcars$mpg);
+glm_model <- glm(mpg_counts ~ mtcars$disp + mtcars$hp + mtcars$wt, family="poisson")
+summary(glm_model)
+```
+
+This model suggests *wt* as the only significant predictor. 
+
+For $0/1$ data, use *family="binomial"* in the above expression
+
+## Analysis of Variance (ANOVA)
+
+```{r}
+data("PlantGrowth")
+
+require(ggplot2)
+ 
+ggplot(PlantGrowth, aes(x = group, y = weight)) +
+  geom_boxplot(fill = "grey80", colour = "red") +
+  scale_x_discrete() + xlab("Treatment Group") +
+  ylab("Dried weight of plants")
+
+plant.mod1 = lm(weight ~ group, data = PlantGrowth)
+summary(plant.mod1)
+anova(plant.mod1)
+
+plant.mod = data.frame(Fitted = fitted(plant.mod1),
+  Residuals = resid(plant.mod1), Treatment = PlantGrowth$group)
+
+ggplot(plant.mod, aes(Fitted, Residuals, colour = Treatment)) + geom_point()
+```
+
+## Classification (Support Vector Machine)
+
+We briefly go over the most common classification tool - Support Vector Machine and how to use it in R. In any classification problem we have some variables and corresponding to the data on these variables we have some labels/classes known. Now given a new set of data for which the values of the variables are known but the labels or classes are not known, we have to predict the classes. That is the main essence of classification. Here we implement the most popular classification method - the Support Vector Machines. 
+
+
+```{r}
+library("e1071")
+data(iris)
+
+library(ggvis)
+iris %>% ggvis(~Sepal.Length, ~Sepal.Width, fill = ~Species) %>% layer_points() 
+
+training_iris <- iris[c(1:25, 50:75, 100:125),];
+test_iris <- iris[-c(1:25, 50:75, 100:125),]
+x <- subset(training_iris, select=-Species) ## removes Species column
+y <- training_iris$Species ## only Species column
+
+svm_model1 <- svm(x,y) 
+summary(svm_model1)
+ 
+test_x <- subset(test_iris, select=-Species) ## extract predictors for test data
+pred <- predict(svm_model1,test_x) ## predict classes for test data
+
+table(pred,test_iris$Species) ## misclassiifcation table
+
+```
+
+
+
